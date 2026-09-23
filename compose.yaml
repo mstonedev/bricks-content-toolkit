@@ -5,7 +5,7 @@ services:
       dockerfile: .devcontainer/Dockerfile
       args:
         PHP_VERSION: ${PHP_VERSION:-8.3}
-    working_dir: /workspaces/my-plugin
+    working_dir: /workspaces/bricks-content-toolkit
     volumes:
       - .:/workspaces/bricks-content-toolkit:cached
       - plugin_node_modules:/workspaces/bricks-content-toolkit/node_modules
