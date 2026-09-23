@@ -2,317 +2,352 @@
 
 Custom WordPress functionality and Bricks Builder elements for article-content workflows.
 
-## Status
+## Development approach
 
-This project is in early development. It includes a Docker Compose and VS Code Dev Container setup so the WordPress runtime, MariaDB database, PHP CLI, Node.js, npm, Composer, and WP-CLI run in containers rather than being installed as project dependencies on the host operating system.
+This repository contains the plugin source code and project tooling only. It does **not** include WordPress core, a database, the licensed Bricks theme, uploads, or a Docker Compose WordPress stack.
+
+Recommended local development uses:
+
+- **Laravel Herd** to serve WordPress locally with PHP 8.3 and optional local HTTPS
+- **DBngin** to run a local MariaDB database
+- **NVM** to manage Node.js versions
+- **Node.js 24 LTS** and npm for JavaScript/CSS build tooling
+- **Composer** and **WP-CLI** when PHP dependencies, quality tools, or WordPress automation are needed
+- **GitHub Actions** for repeatable CI checks
+
+The plugin repository is symlinked into a separate local WordPress installation. This gives immediate access to plugin changes without copying files or uploading ZIP archives.
 
 ## Requirements
 
-Install these tools on the host computer:
+Install the following on the development machine:
 
-- Docker Desktop (or Docker Engine with the Compose plugin)
-- Git
+- Local WordPress installation ie. [Laravel Herd](https://herd.laravel.com/) or similar
+- MySQL/MariDB Database. ie. built with [DBngin](https://dbngin.com/) or similar
+- [Git](https://git-scm.com/)
+- [NVM](https://github.com/nvm-sh/nvm)
+- Node.js 24 LTS, installed through NVM
+- PHP 8.3+
+- Composer
+- WP-CLI
+- VS Code, PhpStorm, or another editor
 
-Visual Studio Code and the Microsoft **Dev Containers** extension are optional. Use the Dev Container workflow below if you want the VS Code integration, or follow the [Docker-only setup](#docker-only-setup-without-vs-code) from any terminal.
+### Required versions
 
-You do not need to install PHP, Composer, Node.js, npm, MariaDB, or WordPress directly on the host for this project.
+| Tool | Project standard |
+|---|---|
+| PHP runtime | PHP 8.3 |
+| Node.js | Node 24 LTS |
+| npm | The npm version bundled with the selected Node 24 release |
+| Database | MariaDB, managed locally through DBngin |
+| WordPress | Use a currently supported version; document the exact tested version in release notes when needed |
+| Bricks | Install and activate a licensed, compatible Bricks version in the local WordPress site |
 
-## Project structure
+The project pins its Node major version in `.nvmrc`.
+
+## Repository layout
 
 ```text
 bricks-content-toolkit/
-├── .devcontainer/                 # VS Code Dev Container configuration
+├── .github/
+│   └── workflows/                 # GitHub Actions CI workflows
 ├── includes/                      # PHP classes and plugin functionality
-├── src/                           # JavaScript, CSS, and other source assets
+├── src/                           # JavaScript/CSS source assets, when needed
+├── build/                         # Generated browser assets; ignored by Git initially
 ├── bricks-content-toolkit.php     # Plugin bootstrap file
-├── compose.yaml                   # Workspace, WordPress, and MariaDB services
-├── package.json                   # JavaScript tooling and npm scripts
-├── package-lock.json              # Locked npm dependency versions
-├── .env.example                   # Safe local-environment template
+├── package.json                   # npm scripts and JavaScript dependencies
+├── package-lock.json              # Exact locked npm dependency tree
+├── .nvmrc                         # Required Node.js major version
+├── .editorconfig                  # Shared editor whitespace rules, when added
+├── composer.json                  # PHP dependencies/tooling, when added
+├── phpcs.xml.dist                 # WordPress coding standards configuration, when added
+├── phpstan.neon                   # Static-analysis configuration, when added
+├── tests/                         # Automated tests, when added
+├── README.md
 └── .gitignore
 ```
 
-## Local development
+## Local WordPress layout
 
-### 1. Clone the repository
+Keep the local WordPress site separate from this Git repository.
+
+```text
+/<sites-dir>/
+└── bricks-local/                         # Local WordPress site; not this repository
+    ├── wp-admin/
+    ├── wp-content/
+    │   ├── plugins/
+    │   │   └── bricks-content-toolkit → symlink to this repository
+    │   └── themes/
+    │       └── bricks/                   # Licensed local theme installation
+    |       └── bricks-child/             # recommended activated local theme
+    ├── wp-includes/
+    └── wp-config.php
+
+/<path-to-repositories>/
+└── bricks-content-toolkit/               # This Git repository
+```
+
+The symlink lets WordPress load the plugin directly from this repository. Saving a PHP, CSS, JavaScript, or built asset file changes what WordPress sees immediately.
+
+## First-time setup
+
+### 1. Install WordPress and Bricks
+
+Install WordPress wherever you place your WordPress installations locally and connect it to a MySQL/MariaDB database, and complete the local WordPress installation. Your WordPress installation should be using a minimum of PHP 8.3.
+
+Install and activate a licensed copy of the Bricks theme (Brick's child theme is recommended.) in that local WordPress site. Do not commit Bricks files or license material to this plugin repository.
+
+### 2. Clone the plugin repository
+
+`cd` into the directory where you store repositories locally.
 
 ```bash
 git clone <repository-url>
 cd bricks-content-toolkit
 ```
 
-### 2. Create local environment settings
+### 3. Set the Node.js version
 
-Create a local `.env` file from the example:
+Install and select the project’s Node version with NVM:
 
 ```bash
-cp .env.example .env
+nvm install
+nvm use
 ```
 
-The default configuration uses:
+Verify the selected runtime:
 
-```dotenv
-PHP_VERSION=8.3
-WORDPRESS_PORT=8080
-MARIADB_DATABASE=wordpress
-MARIADB_USER=wordpress
-MARIADB_PASSWORD=wordpress
-MARIADB_ROOT_PASSWORD=local-dev-root-password
+```bash
+node --version
+npm --version
 ```
 
-The values are for local development only. Do not use these credentials in staging or production.
-
-### 3. Open in a Dev Container
-
-1. Open the `bricks-content-toolkit` folder in VS Code.
-2. Press `Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows/Linux.
-3. Run **Dev Containers: Reopen in Container**.
-4. Wait for Docker to build the workspace image and start the services.
-
-The Compose stack starts three containers:
-
-| Service | Purpose |
-|---|---|
-| `workspace` | VS Code development environment with PHP CLI, Node.js, npm, Composer, WP-CLI, Git, and the MariaDB client |
-| `wordpress` | Local WordPress site served by Apache/PHP |
-| `mariadb` | Local WordPress database |
+The Node major version should match `.nvmrc`.
 
 ### 4. Install JavaScript dependencies
 
-From the VS Code terminal after it reconnects to the Dev Container:
+Use the lockfile for reproducible dependency installation:
 
 ```bash
 npm ci
 ```
 
-Use `npm install` only when intentionally changing dependencies in `package.json`. Use `npm ci` for normal reproducible installation from `package-lock.json`.
+Use `npm install` only when intentionally adding, removing, or changing dependencies in `package.json`. When `package.json` changes, commit the corresponding updated `package-lock.json` in the same change.
 
-### 5. Install WordPress
+Do not commit `node_modules/`.
 
-Open the local site in a browser:
+### 5. Symlink the plugin into WordPress
+
+From the WordPress plugins directory, create a symlink to the cloned repository:
+
+```bash
+ln -s \
+  /<path-to-bricks-content-toolkit> \
+  /<path-to-wordpress>/wp-content/plugins/bricks-content-toolkit
+```
+
+Verify the symlink:
+
+```bash
+ls -la <path-to-wordpress>/wp-content/plugins
+```
+
+Expected shape:
 
 ```text
-http://localhost:8080
+bricks-content-toolkit -> /<path-to-repository-directory>/bricks-content-toolkit
 ```
 
-Complete the WordPress installer using local-only credentials. Then go to:
+Open WordPress Admin, go to **Plugins**, and activate **Bricks Content Toolkit**.
+
+## Daily development
+
+### PHP-only development
+
+For WordPress hooks, Bricks elements, settings pages, PHP classes, and directly-enqueued CSS or JavaScript:
 
 ```text
-WordPress Admin → Plugins
+Edit → save → refresh the browser
 ```
 
-Activate **Bricks Content Toolkit**.
+No npm build command is required for PHP changes.
 
-### Docker-only setup (without VS Code)
+### Compiled JavaScript or CSS
 
-You can run the complete development environment from a normal host terminal. This workflow uses Docker Compose directly and does not require Visual Studio Code, the Dev Containers extension, PHP, Node.js, npm, Composer, or MariaDB installed on the host.
-
-From the repository root:
+When the project contains source assets that need compilation—such as module-based JavaScript, JSX/React, TypeScript, Sass/SCSS, or Gutenberg block code—run the watcher once per development session:
 
 ```bash
-cp .env.example .env
-docker compose up -d --build
+cd /<path-to-repository-directory>//bricks-content-toolkit
+nvm use
+npm run start
 ```
 
-The `workspace` container stays running so it can be used for CLI commands. The source directory is bind-mounted into both the workspace and WordPress containers, so edits made in any editor are available to WordPress immediately.
-
-Install JavaScript dependencies in the workspace container:
-
-```bash
-docker compose exec workspace npm ci
-```
-
-Run project commands in the container with the repository as the working directory:
-
-```bash
-docker compose exec workspace npm run build
-docker compose exec workspace npm run lint:js
-docker compose exec workspace npm run lint:css
-docker compose exec workspace php -l bricks-content-toolkit.php
-```
-
-If you are developing compiled JavaScript or CSS assets, keep the watcher running in a terminal window:
-
-```bash
-docker compose exec workspace npm run start
-```
-
-Open `http://localhost:8080` to complete the WordPress installer, then activate **Bricks Content Toolkit** under **WordPress Admin → Plugins**. If you changed `WORDPRESS_PORT` in `.env`, use that port instead.
-
-When finished, stop the containers from the host terminal:
-
-```bash
-docker compose down
-```
-
-`docker compose down` keeps the named WordPress and MariaDB volumes. To remove the local WordPress installation and database as well, use `docker compose down --volumes`.
-
-## Container paths
-
-The plugin source exists in one Git repository on the host and is bind-mounted into both relevant containers:
-
-| Location | Path |
-|---|---|
-| Host computer | The cloned `bricks-content-toolkit` repository |
-| Workspace container | `/workspaces/bricks-content-toolkit` |
-| WordPress container | `/var/www/html/wp-content/plugins/bricks-content-toolkit` |
-
-Changes made in the host editor are immediately visible to WordPress after a browser refresh. No FTP, ZIP upload, or manual file copy is required.
-
-## Commands
-
-Run project commands from the VS Code terminal attached to the `workspace` container.
-
-| Command | Purpose |
-|---|---|
-| `npm ci` | Install the exact JavaScript dependency versions from `package-lock.json` |
-| `npm run start` | Watch source assets and rebuild them during development |
-| `npm run build` | Create optimized production assets |
-| `npm run lint:js` | Lint JavaScript source files |
-| `npm run lint:css` | Lint CSS/Sass source files |
-| `npm run format` | Format supported project source files |
-| `php -l bricks-content-toolkit.php` | Check the main plugin file for PHP syntax errors |
-
-At this stage, `src/` may be empty. Do not run `npm run start` until the project includes JavaScript/CSS assets for `@wordpress/scripts` to build.
-
-## Managing the stack
-
-Run Docker Compose commands from a normal host terminal in the repository root, not from the Dev Container terminal.
-
-```bash
-cd ~/Repositories/bricks-content-toolkit
-```
-
-Useful commands:
-
-```bash
-# Show running services
-docker compose ps
-
-# View recent WordPress logs
-docker compose logs --tail=100 wordpress
-
-# View recent MariaDB logs
-docker compose logs --tail=100 mariadb
-
-# Stop the local environment
-docker compose down
-
-# Start the local environment
-docker compose up -d
-```
-
-To check the PHP version used by the WordPress web runtime:
-
-```bash
-docker compose exec wordpress php --version
-```
-
-## Changing PHP versions
-
-The PHP version is controlled through `.env`:
-
-```dotenv
-PHP_VERSION=8.3
-```
-
-To test another supported version, change the value, for example:
-
-```dotenv
-PHP_VERSION=8.2
-```
-
-Then rebuild the environment:
-
-1. In VS Code, run **Dev Containers: Rebuild Container**.
-2. Verify workspace PHP:
-
-   ```bash
-   php --version
-   ```
-
-3. Verify WordPress runtime PHP from the host terminal:
-
-   ```bash
-   docker compose exec wordpress php --version
-   ```
-
-The workspace and WordPress containers should use the same PHP major/minor version.
-
-## Git and generated files
-
-Commit source and reproducibility files, including:
+Leave the watcher running. It watches `src/` and writes generated browser assets to `build/` whenever you save a source file.
 
 ```text
-bricks-content-toolkit.php
-includes/
-src/
-.devcontainer/
-compose.yaml
-package.json
-package-lock.json
-.env.example
-.gitignore
-README.md
+Edit src/ file
+→ save
+→ npm run start recompiles build/ automatically
+→ refresh the WordPress page or editor
+→ see the updated asset
 ```
 
-Do not commit local or generated state, including:
-
-```text
-.env
-node_modules/
-vendor/
-*.log
-```
-
-The repository currently ignores `build/`, which is generated by `wp-scripts`. Before packaging or deployment, build assets with:
+Use the production build only before packaging, release, or deployment:
 
 ```bash
 npm run build
 ```
 
-## Troubleshooting
+At the beginning of the project, `src/` may be empty. In that case, `npm run build` may report that no entry file was found; that is expected until compiled assets are added.
 
-### `npm install` says `package.json` is missing
+## npm commands
 
-Run npm commands only from the repository root, where `package.json` exists:
+Run commands from the repository root:
+
+| Command | Purpose |
+|---|---|
+| `nvm use` | Select the Node version declared in `.nvmrc` |
+| `npm ci` | Install the exact versions in `package-lock.json` |
+| `npm run start` | Watch and rebuild source assets during development |
+| `npm run build` | Create optimized production assets |
+| `npm run lint:js` | Lint JavaScript source assets |
+| `npm run lint:css` | Lint CSS/Sass source assets |
+| `npm run format` | Format supported project files using WordPress tooling |
+| `npm audit` | Inspect dependency-security advisories without changing dependencies |
+
+Do not run `npm audit fix` or `npm audit fix --force` blindly. Review dependency upgrades deliberately, test the project, and commit dependency changes separately.
+
+## PHP checks
+
+Check the main plugin bootstrap file:
 
 ```bash
-pwd
-ls -la package.json
+php -l bricks-content-toolkit.php
 ```
 
-Expected workspace path:
+Check every PHP file under `includes/`:
+
+```bash
+find includes -type f -name '*.php' -print0 | xargs -0 -r -n1 php -l
+```
+
+Use PHP 8.3 for local runtime behavior. Later, add Composer-based tools such as PHP_CodeSniffer with WordPress Coding Standards, PHPStan, and PHPUnit as the plugin grows.
+
+## Local HTTPS
+
+HTTP is adequate for ordinary local plugin work: PHP hooks, Bricks elements, admin pages, CSS, and most JavaScript behavior.
+
+Enable HTTPS through Herd when testing features that require a secure context or production-like behavior, including:
+
+- OAuth or social-login redirect callbacks
+- Secure cookies/authentication behavior
+- Payment integrations
+- WebAuthn/passkeys
+- Service workers/PWA behavior
+- Browser APIs such as camera, microphone, or geolocation
+- Mixed-content issues and HTTP-to-HTTPS redirects
+
+## Git workflow
+
+Commit source code and reproducibility/configuration files:
 
 ```text
-/workspaces/bricks-content-toolkit
+bricks-content-toolkit.php
+includes/
+src/
+.github/
+.nvmrc
+package.json
+package-lock.json
+composer.json
+composer.lock
+phpcs.xml.dist
+phpstan.neon
+phpunit.xml.dist
+README.md
+.gitignore
 ```
 
-### `docker: command not found` in the Dev Container
+Do not commit machine-specific, generated, licensed, or secret material:
 
-This is expected. Docker runs on the host machine; the development container does not need Docker access for ordinary plugin development. Run `docker compose` commands from a host terminal or use Docker Desktop.
+```text
+node_modules/
+vendor/
+.env
+wp-config.php
+WordPress core
+Bricks theme files or license keys
+Database dumps
+uploads/
+Editor-local state
+```
 
-### WordPress does not list the plugin
+## Continuous integration
 
-Confirm that the plugin bootstrap file exists in the WordPress container:
+GitHub Actions is the clean-room verification environment for this plugin. CI should use the committed lockfiles and run checks on every pull request and push.
+
+Initial CI checks should include:
+
+```text
+PHP syntax checks
+Node dependency installation with npm ci
+JavaScript linting
+CSS linting
+Production asset build
+```
+
+As the plugin grows, add:
+
+```text
+PHP_CodeSniffer with WordPress Coding Standards
+PHPStan static analysis
+PHPUnit unit tests
+WordPress integration tests
+A PHP compatibility matrix, such as PHP 8.2, 8.3, and 8.4
+Browser/E2E tests when the plugin has user-facing workflows
+```
+
+CI should run `npm ci`, never `npm install`, because CI must install the exact dependency tree captured in `package-lock.json`.
+
+## Troubleshooting
+
+### Plugin does not appear in WordPress
+
+Verify the symlink exists and points at the plugin repository:
 
 ```bash
-docker compose exec wordpress ls -la \
-  /var/www/html/wp-content/plugins/bricks-content-toolkit
+ls -la /<path-to-wordpress>/wp-content/plugins
 ```
 
-The directory must contain `bricks-content-toolkit.php` with a valid WordPress plugin header.
+Verify the target contains the plugin bootstrap file:
 
-### Changes do not appear in the browser
+```bash
+ls -la /<path-to-repository-directory>/bricks-content-toolkit/bricks-content-toolkit.php
+```
 
-- Refresh the browser for PHP changes.
-- Keep `npm run start` running when developing compiled JavaScript or CSS assets.
-- Run `npm run build` when preparing production assets.
-- Check logs from the host terminal:
+The bootstrap file must contain a valid WordPress plugin header.
 
-  ```bash
-  docker compose logs --tail=100 wordpress
-  ```
+### Changes do not appear
+
+- For PHP: save the file and refresh the page.
+- For directly-enqueued CSS/JS: perform a hard browser refresh if caching is involved.
+- For files in `src/`: ensure `npm run start` is running and reports a successful compilation.
+- Verify WordPress is loading the expected plugin copy through the symlink.
+
+### `npm ci` fails
+
+`npm ci` requires `package.json` and `package-lock.json` to match. If you intentionally changed dependencies in `package.json`, update the lockfile:
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+Then review and commit the new `package-lock.json` together with the `package.json` change.
+
+### `npm run build` says no entry file was discovered
+
+This is expected while `src/` is empty. Add a valid entry point such as `src/index.js`, or add block metadata/source files when implementing a Gutenberg block. Until then, PHP-only plugin features do not require a build step.
 
 ## License
 

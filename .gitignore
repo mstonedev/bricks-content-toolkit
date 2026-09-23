@@ -1,4 +1,5 @@
-# Node.js dependencies and npm files
+
+# Node.js dependencies and package-manager logs
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -9,50 +10,67 @@ pnpm-debug.log*
 vendor/
 composer.phar
 
-# Environment-specific secrets and local overrides
+# Environment files and local secrets
 .env
 .env.local
 .env.*.local
 !.env.example
 
-# Local WordPress / Docker runtime state
-wordpress/
-wp-content/uploads/
-*.sql
-*.sqlite
-*.sqlite3
-
-# Build artifacts
+# Generated build, test, cache, and temporary output
 build/
 dist/
 coverage/
 .cache/
 .tmp/
 temp/
-
-# Logs
-*.log
 logs/
+*.log
+
+# PHPUnit and PHP tool caches
+.phpunit.result.cache
+.phpunit.cache/
+.phpstan.cache
+.phpstan/
+.psalm/
+
+# Local WordPress state: this repository must not contain a full WP site
+wp-admin/
+wp-includes/
+wp-content/uploads/
+wp-config.php
+wp-config-local.php
+wordpress/
+
+# Database exports and local database files
+*.sql
+*.sql.gz
+*.sqlite
+*.sqlite3
 
 # Operating-system files
 .DS_Store
+.AppleDouble
+.LSOverride
 Thumbs.db
 Desktop.ini
 
-# Editor / IDE settings
+# IDE/editor local state
 .idea/
 *.iml
 *.code-workspace
 
-# VS Code: ignore personal workspace state, keep recommended project config
+# Keep shareable VS Code configuration, ignore personal workspace state
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
 !.vscode/launch.json
 
-# Test and tool output
-phpunit.xml
-phpunit.xml.dist
-.phpunit.result.cache
-.psalm/
-.phpstan.cache
+# Local certificates and keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Local dependency-management configuration
+.auth.json

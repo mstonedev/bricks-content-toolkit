@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "description": "Custom Bricks elements for article content.",
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11 <12"
+  },
   "scripts": {
     "start": "wp-scripts start",
     "build": "wp-scripts build",
