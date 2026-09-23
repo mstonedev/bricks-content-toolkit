@@ -1,0 +1,58 @@
+# Node.js dependencies and npm files
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# PHP / Composer dependencies
+vendor/
+composer.phar
+
+# Environment-specific secrets and local overrides
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Local WordPress / Docker runtime state
+wordpress/
+wp-content/uploads/
+*.sql
+*.sqlite
+*.sqlite3
+
+# Build artifacts
+build/
+dist/
+coverage/
+.cache/
+.tmp/
+temp/
+
+# Logs
+*.log
+logs/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor / IDE settings
+.idea/
+*.iml
+*.code-workspace
+
+# VS Code: ignore personal workspace state, keep recommended project config
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+
+# Test and tool output
+phpunit.xml
+phpunit.xml.dist
+.phpunit.result.cache
+.psalm/
+.phpstan.cache
