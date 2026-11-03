@@ -13,32 +13,30 @@ defined( 'ABSPATH' ) || exit;
 class BCT_Plugin {
 
 	/**
-	 * Message in footer.
-	 *
-	 * @var string
-	 */
-	private string $message;
-
-	/**
-	 * Store message to print.
-	 *
-	 * @param string $message Text to show.
-	 */
-	public function __construct( string $message ) {
-		$this->message = $message;
-	}
-
-	/**
 	 * Hook the plugin's methods into WP.
 	 */
 	public function register(): void {
-		add_action( 'wp_footer', array( $this, 'say_hello' ) );
+		add_action( 'after_setup_theme', array( $this, 'boot' ) );
 	}
 
 	/**
-	 * Print the message.
+	 * Start the plugin's features if Bricks is active theme.
 	 */
-	public function say_hello(): void {
-		echo '<p>' . esc_html( $this->message ) . '</p>';
+	public function boot(): void {
+		if ( ! defined( 'BRICKS_VERSION' ) ) {
+			add_action( 'admin_notices', array( $this, 'show_missing_bricks_notice' ) );
+			return;
+		}
+
+		// Features will be registered here.
+	}
+
+	/**
+	 * Tell admins that the plugin requires the Bricks theme.
+	 */
+	public function show_missing_bricks_notice(): void {
+		echo '<div class="notice notice-warning"><p>';
+		echo esc_html__( 'Bricks Content Toolkit requires the Bricks theme to be active.', 'bricks-content-toolkit' );
+		echo '</p></div>';
 	}
 }

@@ -7,6 +7,7 @@
  * @copyright 2026 Michael Stone
  * @license GPL-2.0-or-later
  *
+ * @wordpress-plugin
  * Plugin Name: Bricks Content Toolkit
  * Plugin URI: https://michaelstone.dev/
  * Description: Custom Bricks elements for article content.
@@ -22,5 +23,5 @@ defined( 'ABSPATH' ) || exit;
 
 require_once __DIR__ . '/includes/class-bct-plugin.php';
 
-$bct_plugin = new BCT_Plugin( '...' );
+$bct_plugin = new BCT_Plugin();
 $bct_plugin->register();
