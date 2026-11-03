@@ -26,9 +26,13 @@ class BCT_Plugin {
 		if ( ! defined( 'BRICKS_VERSION' ) ) {
 			add_action( 'admin_notices', array( $this, 'show_missing_bricks_notice' ) );
 			return;
+
 		}
 
-		// Features will be registered here.
+		require_once __DIR__ . '/class-bct-dynamic-tags.php';
+
+		$dynamic_tags = new BCT_Dynamic_Tags();
+		$dynamic_tags->register();
 	}
 
 	/**
