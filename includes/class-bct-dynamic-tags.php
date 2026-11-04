@@ -34,17 +34,13 @@ class BCT_Dynamic_Tags {
 	 * @return array
 	 */
 	public function add_tags_to_builder( array $tags ): array {
-		$tags[] = array(
-			'name'  => '{bct_word_count}',
-			'label' => __( 'Word Count', 'bricks-content-toolkit' ),
-			'group' => __( 'Content Toolkit', 'bricks-content-toolkit' ),
-		);
-
-		$tags[] = array(
-			'name'  => '{bct_reading_time}',
-			'label' => __( 'Reading Time (minutes)', 'bricks-content-toolkit' ),
-			'group' => __( 'Content Toolkit', 'bricks-content-toolkit' ),
-		);
+		foreach ( $this->get_tags() as $name => $label ) {
+			$tags[] = array(
+				'name'  => '{' . $name . '}',
+				'label' => $label,
+				'group' => __( 'Content Toolkit', 'bricks-content-toolkit' ),
+			);
+		}
 
 		return $tags;
 	}
@@ -61,17 +57,10 @@ class BCT_Dynamic_Tags {
 			return $tag;
 		}
 
-		$name = str_replace( array( '{', '}' ), '', $tag );
+		$name  = str_replace( array( '{', '}' ), '', $tag );
+		$value = $this->get_tag_value( $name, $post );
 
-		if ( 'bct_word_count' === $name ) {
-			return $this->get_word_count( $post );
-		}
-
-		if ( 'bct_reading_time' === $name ) {
-			return $this->get_reading_time( $post );
-		}
-
-		return $tag;
+		return $value ?? $tag;
 	}
 
 	/**
@@ -86,15 +75,42 @@ class BCT_Dynamic_Tags {
 			return $content;
 		}
 
-		if ( str_contains( $content, '{bct_word_count}' ) ) {
-			$content = str_replace( '{bct_word_count}', (string) $this->get_word_count( $post ), $content );
-		}
+		foreach ( array_keys( $this->get_tags() ) as $name ) {
+			$placeholder = '{' . $name . '}';
 
-		if ( str_contains( $content, '{bct_reading_time}' ) ) {
-			$content = str_replace( '{bct_reading_time}', (string) $this->get_reading_time( $post ), $content );
+			if ( str_contains( $content, $placeholder ) ) {
+				$content = str_replace( $placeholder, (string) $this->get_tag_value( $name, $post ), $content );
+			}
 		}
 
 		return $content;
+	}
+
+	/**
+	 * List this plugin's tags as name => label.
+	 *
+	 * @return array<string, string>
+	 */
+	private function get_tags(): array {
+		return array(
+			'bct_word_count'   => __( 'Word Count', 'bricks-content-toolkit' ),
+			'bct_reading_time' => __( 'Reading Time (minutes)', 'bricks-content-toolkit' ),
+		);
+	}
+
+	/**
+	 * Work out the value of one of the plugin's tags.
+	 *
+	 * @param string       $name Tag name without curly braces.
+	 * @param WP_Post|null $post Post being rendered.
+	 * @return string|null The value, or null if the tag is not ours.
+	 */
+	private function get_tag_value( string $name, $post ): ?string {
+		return match ( $name ) {
+			'bct_word_count' => (string) $this->get_word_count( $post ),
+			'bct_reading_time' => (string) $this->get_reading_time( $post ),
+			default => null,
+		};
 	}
 
 	/**
