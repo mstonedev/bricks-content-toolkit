@@ -13,6 +13,11 @@ defined( 'ABSPATH' ) || exit;
 class BCT_Dynamic_Tags {
 
 	/**
+	 * Average reading time speed used for reading time.
+	 */
+	private const WORDS_PER_MINUTE = 200;
+
+	/**
 	 * Hook the tags into Bricks.
 	 */
 	public function register(): void {
@@ -35,11 +40,17 @@ class BCT_Dynamic_Tags {
 			'group' => __( 'Content Toolkit', 'bricks-content-toolkit' ),
 		);
 
+		$tags[] = array(
+			'name'  => '{bct_reading_time}',
+			'label' => __( 'Reading Time (minutes)', 'bricks-content-toolkit' ),
+			'group' => __( 'Content Toolkit', 'bricks-content-toolkit' ),
+		);
+
 		return $tags;
 	}
 
 	/**
-	 * Return the value when it still contains only one of the plugins tags.
+	 * Return the value when a field contains only one of the plugin's tags.
 	 *
 	 * @param mixed   $tag Tag name with or without curly braces.
 	 * @param WP_Post $post Post being rendered.
@@ -52,30 +63,42 @@ class BCT_Dynamic_Tags {
 
 		$name = str_replace( array( '{', '}' ), '', $tag );
 
-		if ( 'bct_word_count' !== $name ) {
-			return $tag;
+		if ( 'bct_word_count' === $name ) {
+			return $this->get_word_count( $post );
 		}
 
-		return $this->get_word_count( $post );
+		if ( 'bct_reading_time' === $name ) {
+			return $this->get_reading_time( $post );
+		}
+
+		return $tag;
 	}
 
 	/**
-	 * Return the value when a field contains only one of the plugin's tags.
+	 * Replace the plugin's tags inside longer text.
 	 *
 	 * @param mixed   $content Text that may contain tags.
-	 * @param WP_Post $post Post being rendered.
+	 * @param WP_Post $post    Post being rendered.
 	 * @return mixed
 	 */
 	public function render_content( $content, $post ) {
-		if ( ! is_string( $content ) || ! str_contains( $content, '{bct_word_count}' ) ) {
+		if ( ! is_string( $content ) ) {
 			return $content;
 		}
 
-		return str_replace( '{bct_word_count}', (string) $this->get_word_count( $post ), $content );
+		if ( str_contains( $content, '{bct_word_count}' ) ) {
+			$content = str_replace( '{bct_word_count}', (string) $this->get_word_count( $post ), $content );
+		}
+
+		if ( str_contains( $content, '{bct_reading_time}' ) ) {
+			$content = str_replace( '{bct_reading_time}', (string) $this->get_reading_time( $post ), $content );
+		}
+
+		return $content;
 	}
 
 	/**
-	 * Count the words in a post's content.
+	 * Count the words in the post's content.
 	 *
 	 * @param WP_Post|null $post Post to count.
 	 * @return int
@@ -88,5 +111,17 @@ class BCT_Dynamic_Tags {
 		$text = wp_strip_all_tags( $post->post_content );
 
 		return str_word_count( $text );
+	}
+
+	/**
+	 * Estimate how many minutes it takes to read.
+	 *
+	 * @param WP_Post|null $post Post to measure.
+	 * @return int
+	 */
+	private function get_reading_time( $post ): int {
+		$words = $this->get_word_count( $post );
+
+		return (int) ceil( $words / self::WORDS_PER_MINUTE );
 	}
 }
