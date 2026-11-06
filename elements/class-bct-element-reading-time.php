@@ -46,8 +46,13 @@ class BCT_Element_Reading_Time extends \Bricks\Element {
 	 * Print the elements HTML.
 	 */
 	public function render() {
+		$post_stats = new BCT_Post_Stats();
+		$minutes    = $post_stats->get_reading_time( get_post( $this->post_id ) );
+
 		echo '<div ' . $this->render_attributes( '_root' ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Bricks generates this attribute string.
-		echo esc_html__( 'X min read', 'bricks-content-toolkit' );
+
+		/* translators: %d: estimated reading time in minutes. */
+		echo esc_html( sprintf( __( '%d min read', 'bricks-content-toolkit' ), $minutes ) );
 		echo '</div>';
 	}
 }
