@@ -29,17 +29,21 @@ class BCT_Plugin {
 		}
 
 		require_once __DIR__ . '/class-bct-post-stats.php';
-		require_once __DIR__ . '/class-bct-dynamic-tags.php';
-
-		$dynamic_tags = new BCT_Dynamic_Tags( new BCT_Post_Stats() );
-		$dynamic_tags->register();
-
 		require_once __DIR__ . '/class-bct-settings.php';
 
 		$settings = new BCT_Settings();
 		$settings->register();
 
-		add_action( 'init', array( $this, 'register_elements' ), 11 );
+		if ( $settings->is_feature_enabled( 'bct_enable_dynamic_tags' ) ) {
+			require_once __DIR__ . '/class-bct-dynamic-tags.php';
+
+			$dynamic_tags = new BCT_Dynamic_Tags( new BCT_Post_Stats() );
+			$dynamic_tags->register();
+		}
+
+		if ( $settings->is_feature_enabled( 'bct_enable_reading_time' ) ) {
+			add_action( 'init', array( $this, 'register_elements' ), 11 );
+		}
 	}
 
 	/**
