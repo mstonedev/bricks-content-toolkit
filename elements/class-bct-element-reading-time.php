@@ -52,6 +52,14 @@ class BCT_Element_Reading_Time extends \Bricks\Element {
 			'inline'      => true,
 			'placeholder' => esc_html__( 'min read', 'bricks-content-toolkit' ),
 		);
+
+		$this->controls['wordsPerMinute'] = array(
+			'label'       => esc_html__( 'Words per minute', 'bricks-content-toolkit' ),
+			'type'        => 'number',
+			'min'         => 1,
+			'inline'      => true,
+			'placeholder' => 200,
+		);
 	}
 
 	/**
@@ -62,9 +70,10 @@ class BCT_Element_Reading_Time extends \Bricks\Element {
 			return;
 		}
 
-		$post_stats = new BCT_Post_Stats();
-		$minutes    = $post_stats->get_reading_time( get_post( $this->post_id ) );
-		$suffix     = $this->settings['suffix'] ?? __( 'min read', 'bricks-content-toolkit' );
+		$post_stats       = new BCT_Post_Stats();
+		$words_per_minute = (int) ( $this->settings['wordsPerMinute'] ?? 0 );
+		$minutes          = $post_stats->get_reading_time( get_post( $this->post_id ), $words_per_minute );
+		$suffix           = $this->settings['suffix'] ?? __( 'min read', 'bricks-content-toolkit' );
 
 		echo '<div ' . $this->render_attributes( '_root' ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Bricks generates this attribute string.
 

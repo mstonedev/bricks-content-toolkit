@@ -73,13 +73,18 @@ class BCT_Post_Stats {
 	/**
 	 * Estimate how many minutes it takes to read.
 	 *
-	 * @param WP_Post|null $post Post to measure.
+	 * @param WP_Post|null $post             Post to measure.
+	 * @param int          $words_per_minute Reading speed. Below 1 uses the default.
 	 * @return int
 	 */
-	public function get_reading_time( $post ): int {
+	public function get_reading_time( $post, int $words_per_minute = self::WORDS_PER_MINUTE ): int {
+		if ( $words_per_minute < 1 ) {
+			$words_per_minute = self::WORDS_PER_MINUTE;
+		}
+
 		$words = $this->get_word_count( $post );
 
-		return (int) ceil( $words / self::WORDS_PER_MINUTE );
+		return (int) ceil( $words / $words_per_minute );
 	}
 
 	/**
