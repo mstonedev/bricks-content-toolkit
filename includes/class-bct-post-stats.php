@@ -25,6 +25,13 @@ class BCT_Post_Stats {
 	private static bool $is_measuring = false;
 
 	/**
+	 * Word counts already worked out, keyed by post ID.
+	 *
+	 * @var array<int, int>
+	 */
+	private static array $word_counts = array();
+
+	/**
 	 * Check whether Bricks content is currently being rendered for measuring.
 	 *
 	 * @return bool
@@ -44,13 +51,23 @@ class BCT_Post_Stats {
 			return 0;
 		}
 
+		if ( isset( self::$word_counts[ $post->ID ] ) ) {
+			return self::$word_counts[ $post->ID ];
+		}
+
 		$text = $this->get_bricks_text( $post );
 
 		if ( '' === $text ) {
 			$text = wp_strip_all_tags( $post->post_content );
 		}
 
-		return str_word_count( $text );
+		$count = str_word_count( $text );
+
+		if ( ! self::$is_measuring ) {
+			self::$word_counts[ $post->ID ] = $count;
+		}
+
+		return $count;
 	}
 
 	/**
