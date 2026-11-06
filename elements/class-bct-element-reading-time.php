@@ -43,6 +43,18 @@ class BCT_Element_Reading_Time extends \Bricks\Element {
 	}
 
 	/**
+	 * Add the element's settings to the Bricks builder.
+	 */
+	public function set_controls() {
+		$this->controls['suffix'] = array(
+			'label'       => esc_html__( 'Text after number', 'bricks-content-toolkit' ),
+			'type'        => 'text',
+			'inline'      => true,
+			'placeholder' => esc_html__( 'min read', 'bricks-content-toolkit' ),
+		);
+	}
+
+	/**
 	 * Print the elements HTML.
 	 */
 	public function render() {
@@ -52,11 +64,11 @@ class BCT_Element_Reading_Time extends \Bricks\Element {
 
 		$post_stats = new BCT_Post_Stats();
 		$minutes    = $post_stats->get_reading_time( get_post( $this->post_id ) );
+		$suffix     = $this->settings['suffix'] ?? __( 'min read', 'bricks-content-toolkit' );
 
 		echo '<div ' . $this->render_attributes( '_root' ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Bricks generates this attribute string.
 
-		/* translators: %d: estimated reading time in minutes. */
-		echo esc_html( sprintf( __( '%d min read', 'bricks-content-toolkit' ), $minutes ) );
+		echo esc_html( $minutes . ' ' . $suffix );
 		echo '</div>';
 	}
 }
