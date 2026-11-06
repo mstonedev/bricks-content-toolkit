@@ -95,7 +95,7 @@ class BCT_Dynamic_Tags {
 		return array(
 			'bct_word_count'   => __( 'Word Count', 'bricks-content-toolkit' ),
 			'bct_reading_time' => __( 'Reading Time (minutes)', 'bricks-content-toolkit' ),
-			'bct_post_age'     => __( 'Post Age (days)', 'bricks-content-toolkit ' ),
+			'bct_post_age'     => __( 'Post Age (days)', 'bricks-content-toolkit' ),
 		);
 	}
 
