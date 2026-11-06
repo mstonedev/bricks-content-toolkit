@@ -62,6 +62,78 @@ class BCT_Settings {
 			'bct_reading_time',
 			array( 'label_for' => 'bct_words_per_minute' )
 		);
+
+		add_settings_section(
+			'bct_features',
+			__( 'Features', 'bricks-content-toolkit' ),
+			'__return_empty_string',
+			'bct-settings'
+		);
+
+		foreach ( $this->get_features() as $option => $label ) {
+			register_setting(
+				'bct_settings',
+				$option,
+				array(
+					'type'              => 'integer',
+					'sanitize_callback' => array( $this, 'sanitize_checkbox' ),
+					'default'           => 1,
+				)
+			);
+
+			add_settings_field(
+				$option,
+				$label,
+				array( $this, 'render_feature_field' ),
+				'bct-settings',
+				'bct_features',
+				array( 'label_for' => $option )
+			);
+		}
+	}
+
+	/**
+	 * List the features that can be switched on or off => label.
+	 *
+	 * @return array<string, string>
+	 */
+	private function get_features(): array {
+		return array(
+			'bct_enable_dynamic_tags' => __( 'Dynamic tags', 'bricks-content-toolkit' ),
+			'bct_enable_reading_time' => __( 'Reading Time element', 'bricks-content-toolkit' ),
+		);
+	}
+
+	/**
+	 * Check whether a feature is switched on.
+	 *
+	 * @param string $option Feature's option name.
+	 * @return bool
+	 */
+	public function is_feature_enabled( string $option ): bool {
+		return 1 === (int) get_option( $option, 1 );
+	}
+
+	/**
+	 * Turn a submitted checkbox into 1 or 0.
+	 *
+	 * @param mixed $value Submitted value.
+	 * @return int
+	 */
+	public function sanitize_checkbox( $value ): int {
+		return empty( $value ) ? 0 : 1;
+	}
+
+	/**
+	 * Print a feature's checkbox.
+	 *
+	 * @param array $args Field arguments.
+	 */
+	public function render_feature_field( array $args ): void {
+		$option  = $args['label_for'];
+		$enabled = $this->is_feature_enabled( $option );
+
+		echo '<input type="checkbox" value="1" id="' . esc_attr( $option ) . '" name="' . esc_attr( $option ) . '" ' . checked( $enabled, true, false ) . '>';
 	}
 
 	/**
