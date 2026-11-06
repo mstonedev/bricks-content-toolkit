@@ -46,6 +46,10 @@ class BCT_Element_Reading_Time extends \Bricks\Element {
 	 * Print the elements HTML.
 	 */
 	public function render() {
+		if ( BCT_Post_Stats::is_measuring() ) {
+			return;
+		}
+
 		$post_stats = new BCT_Post_Stats();
 		$minutes    = $post_stats->get_reading_time( get_post( $this->post_id ) );
 

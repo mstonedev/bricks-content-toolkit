@@ -18,6 +18,22 @@ class BCT_Post_Stats {
 	private const WORDS_PER_MINUTE = 200;
 
 	/**
+	 * Whether Bricks content is currently being rendered for measuring.
+	 *
+	 * @var bool
+	 */
+	private static bool $is_measuring = false;
+
+	/**
+	 * Check whether Bricks content is currently being rendered for measuring.
+	 *
+	 * @return bool
+	 */
+	public static function is_measuring(): bool {
+		return self::$is_measuring;
+	}
+
+	/**
 	 * Count the words in the post's content.
 	 *
 	 * @param WP_Post|null $post Post to count.
@@ -28,7 +44,11 @@ class BCT_Post_Stats {
 			return 0;
 		}
 
-		$text = wp_strip_all_tags( $post->post_content );
+		$text = $this->get_bricks_text( $post );
+
+		if ( '' === $text ) {
+			$text = wp_strip_all_tags( $post->post_content );
+		}
 
 		return str_word_count( $text );
 	}
@@ -43,5 +63,37 @@ class BCT_Post_Stats {
 		$words = $this->get_word_count( $post );
 
 		return (int) ceil( $words / self::WORDS_PER_MINUTE );
+	}
+
+	/**
+	 * Render a post's Bricks content and return its plain text.
+	 *
+	 * @param WP_Post $post Post to render.
+	 * @return string
+	 */
+	private function get_bricks_text( WP_Post $post ): string {
+		if ( self::$is_measuring ) {
+			return '';
+		}
+
+		$elements = get_post_meta( $post->ID, BRICKS_DB_PAGE_CONTENT, true );
+
+		if ( ! is_array( $elements ) || array() === $elements ) {
+			return '';
+		}
+
+		$previous_elements  = \Bricks\Frontend::$elements;
+		$previous_area      = \Bricks\Frontend::$area;
+		self::$is_measuring = true;
+
+		try {
+			$html = \Bricks\Frontend::render_data( $elements, 'content', $post->ID );
+
+			return wp_strip_all_tags( str_replace( '<', ' <', $html ) );
+		} finally {
+			\Bricks\Frontend::$elements = $previous_elements;
+			\Bricks\Frontend::$area     = $previous_area;
+			self::$is_measuring         = false;
+		}
 	}
 }
