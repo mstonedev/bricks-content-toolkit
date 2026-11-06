@@ -98,6 +98,12 @@ class BCT_Post_Stats {
 			return '';
 		}
 
+		$editor_mode = \Bricks\Helpers::get_editor_mode( $post->ID );
+
+		if ( 'wordpress' === $editor_mode ) { // phpcs:ignore WordPress.WP.CapitalPDangit.MisspelledInText -- Bricks stores this lowercase value.
+			return '';
+		}
+
 		$elements = get_post_meta( $post->ID, BRICKS_DB_PAGE_CONTENT, true );
 
 		if ( ! is_array( $elements ) || array() === $elements ) {

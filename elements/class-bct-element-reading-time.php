@@ -8,12 +8,12 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers the reading time element and extends \Bricks\Element.
+ * Shows an estimated reading time for the current post.
  */
 class BCT_Element_Reading_Time extends \Bricks\Element {
 
 	/**
-	 * Group shown and Bricks elements panel.
+	 * Group shown in the Bricks elements panel.
 	 *
 	 * @var string
 	 */
@@ -27,7 +27,7 @@ class BCT_Element_Reading_Time extends \Bricks\Element {
 	public $name = 'bct-reading-time';
 
 	/**
-	 * Icon shownn in Bricks elements panel.
+	 * Icon shown in the Bricks elements panel.
 	 *
 	 * @var string
 	 */
@@ -63,7 +63,7 @@ class BCT_Element_Reading_Time extends \Bricks\Element {
 	}
 
 	/**
-	 * Print the elements HTML.
+	 * Print the element's HTML.
 	 */
 	public function render() {
 		if ( BCT_Post_Stats::is_measuring() ) {
