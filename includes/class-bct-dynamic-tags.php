@@ -13,9 +13,20 @@ defined( 'ABSPATH' ) || exit;
 class BCT_Dynamic_Tags {
 
 	/**
-	 * Average reading time speed used for reading time.
+	 * Calculates the post statistics shown by the tags.
+	 *
+	 * @var BCT_Post_Stats
 	 */
-	private const WORDS_PER_MINUTE = 200;
+	private BCT_Post_Stats $post_stats;
+
+	/**
+	 * Store the object used to calculate post statistics.
+	 *
+	 * @param BCT_Post_Stats $post_stats Post statistics calculator.
+	 */
+	public function __construct( BCT_Post_Stats $post_stats ) {
+		$this->post_stats = $post_stats;
+	}
 
 	/**
 	 * Hook the tags into Bricks.
@@ -108,39 +119,11 @@ class BCT_Dynamic_Tags {
 	 */
 	private function get_tag_value( string $name, $post ): ?string {
 		return match ( $name ) {
-			'bct_word_count' => (string) $this->get_word_count( $post ),
-			'bct_reading_time' => (string) $this->get_reading_time( $post ),
+			'bct_word_count' => (string) $this->post_stats->get_word_count( $post ),
+			'bct_reading_time' => (string) $this->post_stats->get_reading_time( $post ),
 			'bct_post_age' => (string) $this->get_post_age( $post ),
 			default => null,
 		};
-	}
-
-	/**
-	 * Count the words in the post's content.
-	 *
-	 * @param WP_Post|null $post Post to count.
-	 * @return int
-	 */
-	private function get_word_count( $post ): int {
-		if ( ! $post instanceof WP_Post ) {
-			return 0;
-		}
-
-		$text = wp_strip_all_tags( $post->post_content );
-
-		return str_word_count( $text );
-	}
-
-	/**
-	 * Estimate how many minutes it takes to read.
-	 *
-	 * @param WP_Post|null $post Post to measure.
-	 * @return int
-	 */
-	private function get_reading_time( $post ): int {
-		$words = $this->get_word_count( $post );
-
-		return (int) ceil( $words / self::WORDS_PER_MINUTE );
 	}
 
 	/**

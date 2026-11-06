@@ -26,13 +26,26 @@ class BCT_Plugin {
 		if ( ! defined( 'BRICKS_VERSION' ) ) {
 			add_action( 'admin_notices', array( $this, 'show_missing_bricks_notice' ) );
 			return;
-
 		}
 
+		require_once __DIR__ . '/class-bct-post-stats.php';
 		require_once __DIR__ . '/class-bct-dynamic-tags.php';
 
-		$dynamic_tags = new BCT_Dynamic_Tags();
+		$dynamic_tags = new BCT_Dynamic_Tags( new BCT_Post_Stats() );
 		$dynamic_tags->register();
+
+		add_action( 'init', array( $this, 'register_elements' ), 11 );
+	}
+
+	/**
+	 * Register the plugin's custom Bricks elements.
+	 */
+	public function register_elements(): void {
+		\Bricks\Elements::register_element(
+			dirname( __DIR__ ) . '/elements/class-bct-element-reading-time.php',
+			'bct-reading-time',
+			'BCT_Element_Reading_Time'
+		);
 	}
 
 	/**
