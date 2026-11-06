@@ -34,6 +34,11 @@ class BCT_Plugin {
 		$dynamic_tags = new BCT_Dynamic_Tags( new BCT_Post_Stats() );
 		$dynamic_tags->register();
 
+		require_once __DIR__ . '/class-bct-settings.php';
+
+		$settings = new BCT_Settings();
+		$settings->register();
+
 		add_action( 'init', array( $this, 'register_elements' ), 11 );
 	}
 
