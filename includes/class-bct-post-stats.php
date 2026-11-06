@@ -15,7 +15,7 @@ class BCT_Post_Stats {
 	/**
 	 * Average reading time speed used for reading time.
 	 */
-	private const WORDS_PER_MINUTE = 200;
+	public const WORDS_PER_MINUTE = 200;
 
 	/**
 	 * Whether Bricks content is currently being rendered for measuring.
@@ -74,17 +74,32 @@ class BCT_Post_Stats {
 	 * Estimate how many minutes it takes to read.
 	 *
 	 * @param WP_Post|null $post             Post to measure.
-	 * @param int          $words_per_minute Reading speed. Below 1 uses the default.
+	 * @param int          $words_per_minute Reading speed. Below 1 uses the site default.
 	 * @return int
 	 */
-	public function get_reading_time( $post, int $words_per_minute = self::WORDS_PER_MINUTE ): int {
+	public function get_reading_time( $post, int $words_per_minute = 0 ): int {
 		if ( $words_per_minute < 1 ) {
-			$words_per_minute = self::WORDS_PER_MINUTE;
+			$words_per_minute = $this->get_default_words_per_minute();
 		}
 
 		$words = $this->get_word_count( $post );
 
 		return (int) ceil( $words / $words_per_minute );
+	}
+
+	/**
+	 * Get the site's default reading speed.
+	 *
+	 * @return int
+	 */
+	private function get_default_words_per_minute(): int {
+		$saved = (int) get_option( 'bct_words_per_minute', self::WORDS_PER_MINUTE );
+
+		if ( $saved < 1 ) {
+			return self::WORDS_PER_MINUTE;
+		}
+
+		return $saved;
 	}
 
 	/**
