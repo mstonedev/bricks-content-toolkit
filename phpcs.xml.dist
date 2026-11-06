@@ -9,4 +9,12 @@
 	<arg value="s"/>
 
 	<rule ref="WordPress"/>
+		<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="bricks-content-toolkit"/>
+			</property>
+		</properties>
+	</rule>
+
 </ruleset>
