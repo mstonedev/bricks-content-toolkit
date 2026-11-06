@@ -93,7 +93,7 @@ class BCT_Settings {
 	}
 
 	/**
-	 * List the features that can be switched on or off => label.
+	 * List the features that can be switched on or off as option => label.
 	 *
 	 * @return array<string, string>
 	 */
