@@ -95,6 +95,7 @@ class BCT_Dynamic_Tags {
 		return array(
 			'bct_word_count'   => __( 'Word Count', 'bricks-content-toolkit' ),
 			'bct_reading_time' => __( 'Reading Time (minutes)', 'bricks-content-toolkit' ),
+			'bct_post_age'     => __( 'Post Age (days)', 'bricks-content-toolkit ' ),
 		);
 	}
 
@@ -109,6 +110,7 @@ class BCT_Dynamic_Tags {
 		return match ( $name ) {
 			'bct_word_count' => (string) $this->get_word_count( $post ),
 			'bct_reading_time' => (string) $this->get_reading_time( $post ),
+			'bct_post_age' => (string) $this->get_post_age( $post ),
 			default => null,
 		};
 	}
@@ -139,5 +141,23 @@ class BCT_Dynamic_Tags {
 		$words = $this->get_word_count( $post );
 
 		return (int) ceil( $words / self::WORDS_PER_MINUTE );
+	}
+
+	/**
+	 * Count the whole days since a post was published.
+	 *
+	 * @param WP_Post|null $post Post to measure.
+	 * @return int
+	 */
+	private function get_post_age( $post ): int {
+		$published = get_post_timestamp( $post );
+
+		if ( false === $published ) {
+			return 0;
+		}
+
+		$days = (int) floor( ( time() - $published ) / DAY_IN_SECONDS );
+
+		return max( 0, $days );
 	}
 }
