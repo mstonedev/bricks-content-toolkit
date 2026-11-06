@@ -17,6 +17,7 @@ class BCT_Settings {
 	 */
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'add_page' ) );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
 	}
 
 	/**
@@ -33,6 +34,62 @@ class BCT_Settings {
 	}
 
 	/**
+	 * Register the setting, its section, and its field.
+	 */
+	public function register_settings(): void {
+		register_setting(
+			'bct_settings',
+			'bct_words_per_minute',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => array( $this, 'sanitize_words_per_minute' ),
+				'default'           => BCT_Post_Stats::WORDS_PER_MINUTE,
+			)
+		);
+
+		add_settings_section(
+			'bct_reading_time',
+			__( 'Reading time', 'bricks-content-toolkit' ),
+			'__return_empty_string',
+			'bct-settings'
+		);
+
+		add_settings_field(
+			'bct_words_per_minute',
+			__( 'Words per minute', 'bricks-content-toolkit' ),
+			array( $this, 'render_words_per_minute_field' ),
+			'bct-settings',
+			'bct_reading_time',
+			array( 'label_for' => 'bct_words_per_minute' )
+		);
+	}
+
+	/**
+	 * Make a submitted reading speed safe to save.
+	 *
+	 * @param mixed $value Submitted value.
+	 * @return int
+	 */
+	public function sanitize_words_per_minute( $value ): int {
+		$words_per_minute = (int) $value;
+
+		if ( $words_per_minute < 1 ) {
+			return BCT_Post_Stats::WORDS_PER_MINUTE;
+		}
+
+		return $words_per_minute;
+	}
+
+	/**
+	 * Print the words per minute input.
+	 */
+	public function render_words_per_minute_field(): void {
+		$value = get_option( 'bct_words_per_minute', BCT_Post_Stats::WORDS_PER_MINUTE );
+
+		echo '<input type="number" min="1" class="small-text" id="bct_words_per_minute" name="bct_words_per_minute" value="' . esc_attr( $value ) . '">';
+	}
+
+	/**
 	 * Print the settings page.
 	 */
 	public function render_page(): void {
@@ -40,6 +97,13 @@ class BCT_Settings {
 			return;
 		}
 
-		echo '<div class="wrap"><h1>' . esc_html( get_admin_page_title() ) . '</h1></div>';
+		echo '<div class="wrap"><h1>' . esc_html( get_admin_page_title() ) . '</h1>';
+		echo '<form action="options.php" method="post">';
+
+		settings_fields( 'bct_settings' );
+		do_settings_sections( 'bct-settings' );
+		submit_button();
+
+		echo '</form></div>';
 	}
 }

@@ -15,7 +15,7 @@ class BCT_Post_Stats {
 	/**
 	 * Average reading time speed used for reading time.
 	 */
-	private const WORDS_PER_MINUTE = 200;
+	public const WORDS_PER_MINUTE = 200;
 
 	/**
 	 * Whether Bricks content is currently being rendered for measuring.
